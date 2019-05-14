@@ -15,6 +15,14 @@
     % }
     setup_needle_editor( <%= b(encode_json($default_needle)) %> );
     setupResultButtons();
+	% for my $pro (@$properties) {
+		% if ($pro->{name} eq "workaround") {
+			$("#property_workaround").prop("checked", true);
+			$("#input_workaround_desc").val(<%= $pro->{description} %>);
+			$("#workaround_reason_div").show();
+			% last;
+		% }
+	% }
 % end
 
 <div id="change-margin-form" title="Change search margin" class="modal" role="dialog" tabindex="-1">
@@ -140,16 +148,19 @@
                             </p>
                             <p>
                                 <!-- lists the specific properties -->
-                                <input type="checkbox" name="workaround" id="property_workaround"
-                                        %= 'checked' if $properties->{workaround}
-                                        >
+                                <input type="checkbox" name="workaround" id="property_workaround" >
                                 <label for="property_workaround">workaround</label>
                                 <%= help_popover('Help for the workaround property' =>
                                     'If a needle with the workaround property matches the match result is recorded as
                                     a \'soft-fail\'. It is suggested to mark the reason for this choice in either the
-                                    name of the needle (e.g. my-name-bsc1234-20161224) or with special tags')
+                                    name of the needle (e.g. my-name-bsc1234-20161224) or with special tags and
+									input the reason description in \'Description\' textbox.')
                                 %>
                             </p>
+							<div id="workaround_reason_div" style="margin-bottom:1em; display:none;">
+								<label for="workaround_desc">Description:</label>
+								<input tupe="input" name="workaround_desc" id="input_workaround_desc" class="form-control" value="">
+							</div>
                         </div>
                         <div id="needle_editor_save_buttons">
                             <button type="button" class="btn btn-default" id="review_json" title="Review JSON">Review JSON</button>

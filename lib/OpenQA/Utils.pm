@@ -224,6 +224,27 @@ sub needle_info {
     $needle->{name}      = $name;
     $needle->{distri}    = $distri;
     $needle->{version}   = $version;
+
+	#After change the needle's properties form to hash, support backward compatibility
+	return $needle unless @{$needle->{properties}};
+
+	my @properties = ();
+	foreach (@{$needle->{properties}}){
+		if (ref($_) eq "HASH"){
+			push (@properties, $_);
+			next;
+		}
+		if ($_ eq "workaround"){
+			my $desc = "";
+			if ($name =~ /\S+\-(bsc\d+|poo\d+)\-\S+/){
+				$desc = $1;
+			}
+			push (@properties, {name => "workaround", description => $desc});
+			last;
+		}
+	}
+	$needle->{properties} = \@properties;
+
     return $needle;
 }
 

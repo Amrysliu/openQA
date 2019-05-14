@@ -3,7 +3,7 @@ function NeedleEditor(needle) {
   this.tags = document.getElementById("needleeditor_tags");
   this.canvas = document.getElementById("needleeditor_canvas");
   if (!this.canvas) {
-    alert("missing canvas element "+canvasid);
+		alert("missing canvas element "+canvasid);
     return;
   }
   this.bgImage = null;
@@ -239,14 +239,31 @@ NeedleEditor.prototype.changeTag = function(name, enabled) {
 
 NeedleEditor.prototype.changeProperty = function(name, enabled) {
   var properties = this.needle.properties;
+
   if (enabled) {
-    properties.push(name);
-    properties.sort();
+		var pro = {};
+		pro.name = name;
+    properties.push(pro);
   } else {
-    var idx = properties.indexOf(name);
-    properties.splice(idx, 1);
+		for (var i = 0; i < properties.length; i++) {
+			if (properties[i].name == name){
+				properties.splice(i, 1);
+				break;
+			}
+		}
   }
   this.UpdateTextArea();
+};
+
+NeedleEditor.prototype.changeWrokaroundDesc = function (value) {
+	var properties = this.needle.properties;
+	for (var i = 0; i < properties.length; i++) {
+		if (properties[i].name == "workaround") {
+			properties[i].description = value;
+			break;
+		}
+	}
+	this.UpdateTextArea();
 };
 
 NeedleEditor.prototype.selection = function() {
@@ -348,7 +365,23 @@ function loadTagsAndName() {
   $("#needleeditor_tags").find('input').each(function() {
     $(this).prop('checked', tags.indexOf($(this).val()) !== -1);
   });
-  $("#property_workaround").prop('checked', $.inArray('workaround', needle.properties) !== -1);
+	
+	var workaround_flag = 0;
+	for (var i = 0; i < needle.properties.length; i++){
+		if (needle.properties[i].name == "workaround"){
+			$("#property_workaround").prop('checked', true);
+			$("#input_workaround_desc").val(needle.properties[i].description);
+			$("#workaround_reason_div").show();
+			workaround_flag = 1;
+			break;
+		}
+	}
+	if (workaround_flag == 0){
+		$("#property_workaround").prop('checked', false);
+		$("#input_workaround_desc").val("");
+		$("#workaround_reason_div").hide();
+	}
+
   $("#needleeditor_name").val(needle.suggested_name);
   $("#area_select").val(needle.name);
   loadAreas();
@@ -504,7 +537,14 @@ function setup_needle_editor(imageurl, default_needle)
     return true;
   });
 
-  $('#property_workaround').click(function() { nEditor.changeProperty(this.name, this.checked); });
+  $('#property_workaround').click(function() {
+		nEditor.changeProperty(this.name, this.checked);
+		initWorkaroundDesc(this.checked);
+	});
+
+	$("#input_workaround_desc").blur(function(){
+		nEditor.changeWrokaroundDesc(this.value);
+	});
 
   $('#image_select').change(loadBackground);
   // load default
@@ -570,5 +610,12 @@ function setup_needle_editor(imageurl, default_needle)
   });
 }
 
+function initWorkaroundDesc(enabled) {
+	if (enabled) {
+		$("#workaround_reason_div").show();
+	} else {
+		$("#workaround_reason_div").hide();
+	}
+}
 
 // Now go make something amazing!
