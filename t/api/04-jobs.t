@@ -33,6 +33,7 @@ use Mojo::File 'path';
 use Digest::MD5;
 use OpenQA::Scheduler;
 use OpenQA::Events;
+use Data::Dumper;
 
 require OpenQA::Schema::Result::Jobs;
 
@@ -715,6 +716,9 @@ subtest 'Expand specified Machine, Testsuit, Product variables' => sub {
                 {key => 'BUILD_HA',            value => '%BUILD%'},
                 {key => 'BUILD_SES',           value => '%BUILD%'},
                 {key => 'SHUTDOWN_NEEDS_AUTH', value => '1'},
+                {key => 'HDD_1',               value => 'SLES-15-SP1-x86_64-227.1@64bit-minimal_with_sdk%BUILD%_installed.qcow2'},
+                {key => 'PUBLISH_HDD_1',       value => 'SLES-%VERSION%-%ARCH%-%BUILD%@%MACHINE%-minimal_with_sdk%BUILD_SDK%_installed.qcow2'}, 
+                {key => 'ANOTHER_JOB',         value => 'SLES-%VERSION%-%ARCH%-%BUILD%@%MACHINE%-minimal_with_sdk%BUILD_SDK%_installed.qcow2'},
             ],
         });
     my $testsuites = $t->app->schema->resultset('TestSuites');
@@ -740,6 +744,7 @@ subtest 'Expand specified Machine, Testsuit, Product variables' => sub {
     $post = $t->post_ok('/api/v1/jobs', form => \%jobs_post_params)->status_is(200);
     my $result = $jobs->find($post->tx->res->json->{id})->settings_hash;
     delete $result->{NAME};
+    print Dumper($result);
     is_deeply(
         $result,
         {
@@ -763,6 +768,7 @@ subtest 'Expand specified Machine, Testsuit, Product variables' => sub {
             'SHUTDOWN_NEEDS_AUTH' => 1,
             'PATCH'               => 1,
             'UPGRADE'             => 1,
+            'HDD_1'               => 'SLES-15-SP1-x86_64-227.1@64bit-minimal_with_sdk1234_installed.qcow2',           
         },
         'Job post method expand specified MACHINE, PRODUCT, TESTSUIT variable',
     );
